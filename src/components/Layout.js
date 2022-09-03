@@ -1,18 +1,19 @@
 import React from 'react'
+import FormPeriodo from './formPeriodo'
 
 const Layout = () => {
 
   return (
     <>
-      <div className="bg-gray-200 min-h-screen">
-          <div className='flex min-h-screen'>
-              <p> otro hola</p>
-              <main className='sm:w-2/3 xl:w-4/5 sm:min-h-screen p-5'>
-                  <p>hola</p>
-              </main>
-
-          </div>
+    <div style={{ backgroundImage : 'url(https://ingeoexpert.com/wp-content/uploads/2018/01/1920px-Chuqui001.jpg)' }}>
+      <div className="pt-20" >
+        <div className="grid grid-cols-3">
+          <FormPeriodo />
+          <p></p>
+          <FormPeriodo />
+        </div>
       </div>
+    </div>
     </>
   )
 }

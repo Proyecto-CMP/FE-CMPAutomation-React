@@ -79,7 +79,6 @@ const Login = () => {
 
     return (
         <div className='bg-gray-800 min-h-screen flex flex-col justify-center text-center text-2xl text-white font-light' style= {{backgroundImage: "url(http://s7d2.scene7.com/is/image/Caterpillar/CM20170215-04840-51926?$highres$)"}}>
-            <p className='text-stone-400' >Iniciar Sesión</p>
 
             <div className="flex justify-center mt-5 ">
 

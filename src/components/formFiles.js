@@ -23,6 +23,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 const FormFiles = () => {
     const [ncontrato, setNcontrato] = useState("")
     const [fileNames, setFileNames] = useState([])
+    const [multifileNames, setMultiFileNames] = useState([])
     const test = () => {
         console.log(ncontrato)
         console.log(checkboxOptions)
@@ -67,10 +68,10 @@ const FormFiles = () => {
                     className="mb-4 grid h-28 place-items-center"
                 >
                     <Typography variant="h3" color="white">
-                        Formulario para abrir periodo
+                        Subir archivos a multiples faenas
                     </Typography>
-                    <Typography variant="h5" color="white">
-                        Seleccionar faenas donde se abrira el periodo
+                    <Typography variant="h6" color="white">
+                        Seleccionar faenas donde se subiran los archivos
                     </Typography>
 
                 </CardHeader>
@@ -120,26 +121,58 @@ const FormFiles = () => {
                         </Fragment>
                     ) : null}
 
+                    {/* if at least one checkboxOptions.value equals true */}
+ 
+                    {ncontrato && checkboxOptions.some((option) => option.value === true) ? (
+                        <>
+                            <Typography variant="h6" color="black">
+                                Archivos que se subiran a todas las faenas seleccionadas
+                            </Typography>
+                            <Input type="file" accept="*" multiple onChange={(e) => {
+
+                                let newFileNames = [...fileNames];
+                                // append all checkboxOptions.name to a variable
+                                let faenas = ""
+                                checkboxOptions.forEach((option) => {
+                                    if (option.value) {
+                                        faenas += option.name + "|"
+                                    }
+                                })
+
+                                for (let i = 0; i < e.target.files.length; i++) {
+                                    newFileNames.push(faenas + e.target.files[i].name)
+                                }
+                                setMultiFileNames(newFileNames)
+                            }} />
+                        </>
+                    ) : null}
+
+
                     {/* render input type file for each value true in array checkboxOptions and append to array fileNames */}
                     {checkboxOptions.map((option, index) => {
                         return (
                             <Fragment key={index}>
                                 {option.value ? (
-                                    <Input type="file" accept="*" multiple onChange={(e) => {
+                                    <>
+                                        <Typography variant="h6" color="black">
+                                            Archivos que se subiran a la faena: {option.name}
+                                        </Typography>
+                                        <Input type="file" accept="*" multiple onChange={(e) => {
 
-                                        let newFileNames = [...fileNames];
-                                        //For each file in e.target.files append to newFileNames
-                                        for (let i = 0; i < e.target.files.length; i++) {
-                                            newFileNames.push(option.name +"|" +e.target.files[i].name)
-                                        }
-                                        setFileNames(newFileNames)
-                                        
-                                    }} />
+                                            let newFileNames = [...fileNames];
+                                            //For each file in e.target.files append to newFileNames
+                                            for (let i = 0; i < e.target.files.length; i++) {
+                                                newFileNames.push(option.name + "|" + e.target.files[i].name)
+                                            }
+                                            setFileNames(newFileNames)
+
+                                        }} />
+                                    </>
                                 ) : null}
                             </Fragment>
                         )
                     })}
-                    
+
 
                 </CardBody>
                 <CardFooter className="pt-0">

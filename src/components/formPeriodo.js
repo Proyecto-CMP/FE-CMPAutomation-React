@@ -122,15 +122,15 @@ const FormPeriodo = () => {
           ) : null}
 
 
-
-          <Input
-            type="file"
-            accept=".xls"
-            onChange={(e) => {
-              setFileName(e.target.files[0].name)
-            }}
-          />
-
+          {ncontrato ? (
+            <Input
+              type="file"
+              accept=".xls"
+              onChange={(e) => {
+                setFileName(e.target.files[0].name)
+              }}
+            />
+          ) : null}
         </CardBody>
 
         <CardFooter className="pt-0">

@@ -121,9 +121,8 @@ const FormFiles = () => {
                         </Fragment>
                     ) : null}
 
-                    {/* if at least one checkboxOptions.value equals true */}
- 
-                    {ncontrato && checkboxOptions.some((option) => option.value === true) ? (
+                    {/* if two or more  checkboxOptions.value equals true */}
+                    {ncontrato && checkboxOptions.filter(option => option.value === true).length >= 2 ? (
                         <>
                             <Typography variant="h6" color="black">
                                 Archivos que se subiran a todas las faenas seleccionadas

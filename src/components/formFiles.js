@@ -22,11 +22,11 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const FormFiles = () => {
     const [ncontrato, setNcontrato] = useState("")
-    const [fileName, setFileName] = useState("")
+    const [fileNames, setFileNames] = useState([])
     const test = () => {
         console.log(ncontrato)
         console.log(checkboxOptions)
-        console.log(fileName)
+        console.log(fileNames)
         console.log(dateValue)
     }
 
@@ -45,7 +45,8 @@ const FormFiles = () => {
         if (ncontrato.value === "123456789") {
             setcheckboxOptions([
                 { name: "Guacolda", value: false },
-                { name: "Ceroo Negro Norte", value: false }])
+                { name: "Cerro Negro Norte", value: false },
+                { name: "Planta Pellets", value: false }])
         }
         if (ncontrato.value === "987654321") {
             setcheckboxOptions([
@@ -119,26 +120,26 @@ const FormFiles = () => {
                         </Fragment>
                     ) : null}
 
-                    {/* render input type file for each value true in array checkboxOptions */}
+                    {/* render input type file for each value true in array checkboxOptions and append to array fileNames */}
                     {checkboxOptions.map((option, index) => {
-                        return (<>
+                        return (
                             <Fragment key={index}>
                                 {option.value ? (
-                                    <>
-                                    <Typography variant="h6" color="black">
-                                    Archivos que se subiran a la faena {option.name}
-                                    </Typography>
-                                    <Input type="file" accept=".xls" onChange={(e) => {
-                                        setFileName(e.target.files[0].name)
-                                    }} />
-                                    </>
+                                    <Input type="file" accept="*" multiple onChange={(e) => {
 
-                                    ) : null}
+                                        let newFileNames = [...fileNames];
+                                        //For each file in e.target.files append to newFileNames
+                                        for (let i = 0; i < e.target.files.length; i++) {
+                                            newFileNames.push(option.name +"|" +e.target.files[i].name)
+                                        }
+                                        setFileNames(newFileNames)
+                                        
+                                    }} />
+                                ) : null}
                             </Fragment>
-                        </>
                         )
                     })}
-
+                    
 
                 </CardBody>
                 <CardFooter className="pt-0">

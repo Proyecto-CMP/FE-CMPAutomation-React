@@ -11,7 +11,7 @@ import Layout from './components/Layout';
 function App() {
   return (
     <Router >
-        <Routes>
+        <Routes >
           <Route path="/login" element={<Login/>} />
           <Route path="/forms" element={<Layout/>} />
           <Route path="/*" element={<Navigate replace to="/login" />} />

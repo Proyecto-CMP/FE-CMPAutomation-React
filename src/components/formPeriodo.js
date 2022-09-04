@@ -45,7 +45,7 @@ const FormPeriodo = () => {
     if (ncontrato.value === "123456789") {
       setcheckboxOptions([
         { name: "Guacolda", value: false },
-        { name: "Ceroo Negro Norte", value: false }])
+        { name: "Cerro Negro Norte", value: false }])
     }
     if (ncontrato.value === "987654321") {
       setcheckboxOptions([

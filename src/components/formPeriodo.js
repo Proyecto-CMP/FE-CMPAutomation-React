@@ -13,20 +13,26 @@ import { useState } from 'react'
 import { Checkbox } from '@mui/material';
 import Select from 'react-select';
 import { useEffect } from 'react';
+import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import TextField from '@mui/material/TextField';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { es } from "date-fns/locale";
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const FormPeriodo = () => {
   const [ncontrato, setNcontrato] = useState("")
   const [fileName, setFileName] = useState("")
-
   const test = () => {
     console.log(ncontrato)
     console.log(checkboxOptions)
     console.log(fileName)
+    console.log(dateValue)
   }
 
-  const [checkboxOptions, setcheckboxOptions] = useState([  { name: "Numero de contrato sin faenas", value: false }
+  const [dateValue, setDateValue] = useState(new Date());
 
-])
+  const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Numero de contrato sin faenas", value: false }])
 
 
   const ncontradoDataStatic = [
@@ -36,15 +42,14 @@ const FormPeriodo = () => {
 
   // useState waiting for ncontrato to change
   useEffect(() => {
-    if(ncontrato.value === "123456789"){
-      console.log("aqui")
+    if (ncontrato.value === "123456789") {
       setcheckboxOptions([
         { name: "Guacolda", value: false },
-        { name: "CNN", value: false }])
+        { name: "Ceroo Negro Norte", value: false }])
     }
-    if(ncontrato.value === "987654321"){
+    if (ncontrato.value === "987654321") {
       setcheckboxOptions([
-        { name: "MLC", value: false },
+        { name: "Mina Los Colorados", value: false },
         { name: "Romeral", value: false }])
     }
   }, [ncontrato])
@@ -54,7 +59,7 @@ const FormPeriodo = () => {
   return (
     <>
 
-      <Card className="w-96 bg-gray-200 " >
+      <Card className="w-96 bg-gray-200" >
         <CardHeader
           variant="gradient"
           color='blue'
@@ -77,28 +82,46 @@ const FormPeriodo = () => {
             onChange={setNcontrato}
             options={ncontradoDataStatic}
           />
-           { ncontrato ? (
-                   <Fragment>
-                   {
-                     checkboxOptions.map((option, index) => {
-                       return (
-                         <div key={index}>
-                           <Checkbox
-                             checked={checkboxOptions[index].value}
-                             onChange={() => {
-                               let newCheckboxOptions = [...checkboxOptions];
-                               newCheckboxOptions[index].value = !newCheckboxOptions[index].value;
-                               setcheckboxOptions(newCheckboxOptions);
-                             }}
-                           /> {option.name}
-                         </div>
-                       )
-                     })
-                   }
-                 </Fragment>
-   ) : null}
-          
- 
+          {ncontrato ? (
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es} >
+              <DatePicker
+
+                views={['month', 'year',]}
+                label="Mes y año"
+                minDate={dayjs('2022-03-01')}
+                maxDate={dayjs('2022-10-01')}
+                value={dateValue}
+                onChange={(newValue) => {
+                  setDateValue(newValue);
+                }}
+                renderInput={(params) => <TextField {...params} helperText={null} />}
+              />
+            </LocalizationProvider>
+          ) : null}
+
+
+          {ncontrato ? (
+            <Fragment>
+              {
+                checkboxOptions.map((option, index) => {
+                  return (
+                    <div key={index}>
+                      <Checkbox
+                        checked={checkboxOptions[index].value}
+                        onChange={() => {
+                          let newCheckboxOptions = [...checkboxOptions];
+                          newCheckboxOptions[index].value = !newCheckboxOptions[index].value;
+                          setcheckboxOptions(newCheckboxOptions);
+                        }}
+                      /> {option.name}
+                    </div>
+                  )
+                })
+              }
+            </Fragment>
+          ) : null}
+
+
 
           <Input
             type="file"
@@ -107,13 +130,16 @@ const FormPeriodo = () => {
               setFileName(e.target.files[0].name)
             }}
           />
-          
+
         </CardBody>
 
         <CardFooter className="pt-0">
           <Button variant="gradient" fullWidth onClick={test}>
             Enviar Formulario
           </Button>
+          <Typography variant="small" color="black"  >
+            Apartir de ahora, todas las funciones para realizar la carga de información seran bloqueadas entre los dias 21 al 25 de cada mes, favor realizar la carga de información completa ya que en estas fechas señaladas no podra regularizar la carga.
+          </Typography>
         </CardFooter>
       </Card>
 

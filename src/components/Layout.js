@@ -1,16 +1,17 @@
 import React from 'react'
 import FormPeriodo from './formPeriodo'
+import FormFiles from './formFiles'
 
 const Layout = () => {
 
   return (
     <>
     <div style={{ backgroundImage : 'url(https://ingeoexpert.com/wp-content/uploads/2018/01/1920px-Chuqui001.jpg)' }}>
-      <div className="pt-20" >
+      <div className="pt-20 p-10" >
         <div className="grid grid-cols-3">
           <FormPeriodo />
           <p></p>
-          <FormPeriodo />
+          <FormFiles />
         </div>
       </div>
     </div>

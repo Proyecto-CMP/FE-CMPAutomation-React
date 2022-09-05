@@ -6,11 +6,11 @@ import {
     CardFooter,
     Typography,
     Input,
-    Button,
+    Button
 } from "@material-tailwind/react";
 import { Fragment } from "react";
 import { useState } from 'react'
-import { Checkbox } from '@mui/material';
+import { Checkbox, Icon } from '@mui/material';
 import Select from 'react-select';
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
@@ -23,7 +23,9 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 const FormFiles = () => {
     const [ncontrato, setNcontrato] = useState("")
     const [fileNames, setFileNames] = useState([])
-    const [multifileNames, setMultiFileNames] = useState([])
+    const [fileCounter, setFileCounter] = useState([])
+    const [generalFilesCounter, setGeneralFilesCounter] = useState(0)
+
     const test = () => {
         console.log(ncontrato)
         console.log(checkboxOptions)
@@ -48,9 +50,9 @@ const FormFiles = () => {
                 { name: "Guacolda", value: false },
                 { name: "Cerro Negro Norte", value: false },
                 { name: "Planta Pellets", value: false },
-                { name: "Guacolda", value: false },
-                { name: "Cerro Negro Norte", value: false },
-                { name: "Planta Pellets", value: false }])
+                { name: "Faena 2", value: false },
+                { name: "Faena 3", value: false },
+                { name: "Faena 4", value: false }])
         }
         if (ncontrato.value === "987654321") {
             setcheckboxOptions([
@@ -59,16 +61,33 @@ const FormFiles = () => {
         }
     }, [ncontrato])
 
+    // useEffect if chekboxOptions change, clear fileNames
+    useEffect(() => {
+        setFileNames([])
+    }, [checkboxOptions])
+
+
+
+    // useState waiting for checkboxOptions to change to add counter to saveFileCounter
+    useEffect(() => {
+        let saveFileCounter = []
+        checkboxOptions.map((item, index) => (
+            saveFileCounter.push({ id: index, counter: 0 })
+        ))
+        setFileCounter(saveFileCounter)
+    }, [checkboxOptions])
+
 
 
     return (
         <>
-
             <Card className="w-96 bg-gray-200" >
+
                 <CardHeader
+
                     variant="gradient"
                     color='blue'
-                    className="mb-4 grid h-28 place-items-center"
+                    className="mb-4 grid h-28 place-items-center p-2"
                 >
                     <Typography variant="h3" color="white">
                         Subir archivos a múltiples faenas
@@ -130,8 +149,18 @@ const FormFiles = () => {
                             <Typography variant="h6" color="black">
                                 Archivos que se subiran a todas las faenas seleccionadas
                             </Typography>
-                            <Input type="file" accept="*" multiple onChange={(e) => {
+                            <Icon
+                                icon="close"
+                                color="info"
+                                className="cursor-pointer"
+                                children="Agregar archivo"
+                                onClick={() => {
+                                    let newFileCounter = [...generalFilesCounter];
+                                    newFileCounter += 1;
+                                    setGeneralFilesCounter(newFileCounter)
+                                }}>add_circle</Icon>
 
+                            <Input type="file" accept="*" onChange={(e) => {
                                 let newFileNames = [...fileNames];
                                 // append all checkboxOptions.name to a variable
                                 let faenas = ""
@@ -143,48 +172,63 @@ const FormFiles = () => {
                                 for (let i = 0; i < e.target.files.length; i++) {
                                     newFileNames.push(faenas + e.target.files[i].name)
                                 }
-                                setMultiFileNames(newFileNames)
+                                setFileNames(newFileNames)
                             }} />
                         </>
                     ) : null}
 
-
-                    {/* render input type file for each value true in array checkboxOptions and append to array fileNames */}
                     {checkboxOptions.map((option, index) => {
                         return (
                             <Fragment key={index}>
                                 {option.value ? (
-                                    <>
+                                    <div>
                                         <Typography variant="h6" color="black">
                                             Archivos que se subiran a la faena: {option.name}
                                         </Typography>
-                                        <Input type="file" accept="*" multiple onChange={(e) => {
 
-                                            let newFileNames = [...fileNames];
-                                            //For each file in e.target.files append to newFileNames
-                                            for (let i = 0; i < e.target.files.length; i++) {
-                                                newFileNames.push(option.name + "|" + e.target.files[i].name)
+                                        <Icon
+                                            icon="close"
+                                            color="info"
+                                            className="cursor-pointer"
+                                            children="Agregar archivo"
+                                            key={index}
+                                            onClick={() => {
+                                                let newFileCounter = [...fileCounter];
+                                                newFileCounter[index].counter += 1;
+                                                setFileCounter(newFileCounter)
+                                            }}>add_circle</Icon>
+
+                                        {fileCounter.filter(item => item.id === index).map((item, index) => {
+                                            let array = []
+                                            for (let i = 0; i < item.counter; i++) {
+                                                array.push(<>
+
+                                                    <Input size="md" key={(i)} type="file" accept="*" onChange={(e) => {
+                                                        let newFileNames = [...fileNames];
+
+                                                        for (let i = 0; i < e.target.files.length; i++) {
+                                                            newFileNames.push(option.name + "|" + e.target.files[i].name)
+                                                        }
+                                                        setFileNames(newFileNames)
+                                                    }} />
+                                                </>)
                                             }
-                                            setFileNames(newFileNames)
+                                            return array
+                                        })
+                                        }
 
-                                        }} />
-                                    </>
+                                    </div>
                                 ) : null}
                             </Fragment>
                         )
                     })}
-
-
                 </CardBody>
                 <CardFooter className="pt-0">
-
-
                     <Button variant="gradient" fullWidth onClick={test}>
                         Enviar Formulario
                     </Button>
                 </CardFooter>
             </Card>
-
         </>
     )
 }

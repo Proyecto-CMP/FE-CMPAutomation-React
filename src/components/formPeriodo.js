@@ -63,7 +63,7 @@ const FormPeriodo = () => {
         <CardHeader
           variant="gradient"
           color='blue'
-          className="mb-4 grid h-28 place-items-center"
+          className="mb-4 grid h-28 place-items-center p-2"
         >
           <Typography variant="h3" color="white">
             Formulario para abrir periodo

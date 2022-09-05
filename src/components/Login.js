@@ -32,7 +32,7 @@ const Login = () => {
             rut: Yup.string()
                 .required('El rut no puede ir vacio'),
             password: Yup.string()
-                .required('El password es obligatorio')
+                .required('La contraseña no puede ir vacia')
         }),
         onSubmit: async valores => {
             const { rut, password } = valores;
@@ -78,7 +78,7 @@ const Login = () => {
     })
 
     return (
-        <div className='bg-gray-800 min-h-screen flex flex-col justify-center text-center text-2xl text-white font-light' style= {{backgroundImage: "url(http://s7d2.scene7.com/is/image/Caterpillar/CM20170215-04840-51926?$highres$)"}}>
+        <div className='bg-gray-800 min-h-screen flex flex-col justify-center text-center text-2xl text-white font-light' style= {{backgroundImage: "url(http://s7d2.scene7.com/is/image/Caterpillar/CM20170215-04840-51926?$highres$)",height:"100%",width:"100%",backgroundSize:"cover"}}>
 
             <div className="flex justify-center mt-5 ">
 
@@ -97,7 +97,7 @@ const Login = () => {
                   </div>
                 ) : null}
                     <form
-                        className="bg-white rounded  shadow-md px-8 pt-6 pb-8 mb-4 backdrop-blur"
+                        className="bg-white rounded drop-shadow-2xl shadow-md px-8 pt-6 pb-8 mb-4"
                         onSubmit={formik.handleSubmit}
                     >
                         
@@ -119,7 +119,7 @@ const Login = () => {
                         </div>
 
                         {formik.touched.rut && formik.errors.rut ? (
-                            <div className="my-2 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" >
+                            <div className="my-1 bg-red-100 border-l-4 border-red-500 text-red-700 p-1" >
                                 <p className="font-bold">Error</p>
                                 <p>{formik.errors.rut}</p>
                             </div>
@@ -142,7 +142,7 @@ const Login = () => {
                         </div>
 
                         {formik.touched.password && formik.errors.password ? (
-                            <div className="my-2 bg-red-100 border-l-4 border-red-500 text-red-700 p-4" >
+                            <div className="my-1 bg-red-100 border-l-4 border-red-500 text-red-700 p-1" >
                                 <p className="font-bold">Error</p>
                                 <p>{formik.errors.password}</p>
                             </div>

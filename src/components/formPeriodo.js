@@ -127,7 +127,10 @@ const FormPeriodo = () => {
               type="file"
               accept=".xls"
               onChange={(e) => {
-                setFileName(e.target.files[0].name)
+                //if e.target.files is not empty
+                if (e.target.files.length > 0) {
+                  setFileName(e.target.files[0].name)
+                }
               }}
             />
           ) : null}
@@ -138,7 +141,7 @@ const FormPeriodo = () => {
             Enviar Formulario
           </Button>
           <Typography variant="small" color="black"  >
-            Apartir de ahora, todas las funciones para realizar la carga de información seran bloqueadas entre los dias 21 al 25 de cada mes, favor realizar la carga de información completa ya que en estas fechas señaladas no podra regularizar la carga.
+            A partir de ahora, todas las funciones para realizar la carga de información seran bloqueadas entre los dias 21 al 25 de cada mes, favor realizar la carga de información completa ya que en estas fechas señaladas no podrá regularizar la carga.
           </Typography>
         </CardFooter>
       </Card>

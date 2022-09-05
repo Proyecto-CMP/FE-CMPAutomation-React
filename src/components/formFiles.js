@@ -33,7 +33,7 @@ const FormFiles = () => {
 
     const [dateValue, setDateValue] = useState(new Date());
 
-    const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Numero de contrato sin faenas", value: false }])
+    const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Número de contrato sin faenas", value: false }])
 
 
     const ncontradoDataStatic = [
@@ -45,6 +45,9 @@ const FormFiles = () => {
     useEffect(() => {
         if (ncontrato.value === "123456789") {
             setcheckboxOptions([
+                { name: "Guacolda", value: false },
+                { name: "Cerro Negro Norte", value: false },
+                { name: "Planta Pellets", value: false },
                 { name: "Guacolda", value: false },
                 { name: "Cerro Negro Norte", value: false },
                 { name: "Planta Pellets", value: false }])
@@ -68,16 +71,16 @@ const FormFiles = () => {
                     className="mb-4 grid h-28 place-items-center"
                 >
                     <Typography variant="h3" color="white">
-                        Subir archivos a multiples faenas
+                        Subir archivos a múltiples faenas
                     </Typography>
                     <Typography variant="h6" color="white">
-                        Seleccionar faenas donde se subiran los archivos
+                        Seleccionar faenas donde se subirán los archivos
                     </Typography>
 
                 </CardHeader>
                 <CardBody className="flex flex-col gap-4">
                     <Select
-                        placeholder="Seleccione un numero de contrato"
+                        placeholder="Seleccione un número de contrato"
                         value={ncontrato}
                         onChange={setNcontrato}
                         options={ncontradoDataStatic}
@@ -137,7 +140,6 @@ const FormFiles = () => {
                                         faenas += option.name + "|"
                                     }
                                 })
-
                                 for (let i = 0; i < e.target.files.length; i++) {
                                     newFileNames.push(faenas + e.target.files[i].name)
                                 }

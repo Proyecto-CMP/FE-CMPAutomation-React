@@ -6,13 +6,11 @@ const Layout = () => {
 
   return (
     <>
-    <div style={{ backgroundImage : 'url(https://ingeoexpert.com/wp-content/uploads/2018/01/1920px-Chuqui001.jpg)',  width: '100vw', height: '100vh',backgroundRepeat: 'repeat',}}>
-      <div className="pt-20 p-10" >
-        <div className="grid grid-cols-3">
-          <FormPeriodo />
+      <div style={{ backgroundImage : 'url(https://fondosmil.com/fondo/88266.jpg)',height:"100vh", backgroundRepeat: 'no-repeat'}}>
+        <div className="grid grid-cols-3 h-full" >
+          <div className="pt-20 p-10 col-span-1"><FormPeriodo /></div>
           <p></p>
-          <FormFiles />
-        </div>
+          <div className="pt-20 p-10 col-span-1"><FormFiles /></div>
       </div>
     </div>
     </>

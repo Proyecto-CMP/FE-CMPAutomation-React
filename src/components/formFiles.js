@@ -20,28 +20,34 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { es } from "date-fns/locale";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
+
 const FormFiles = () => {
     const [ncontrato, setNcontrato] = useState("")
     const [fileNames, setFileNames] = useState([])
     const [fileCounter, setFileCounter] = useState([])
     const [generalFilesCounter, setGeneralFilesCounter] = useState(0)
+    const [fileTypes, setFileTypes] = useState([])
+    const [generalFileType, setGeneralFileType] = useState([])
 
+    var GeneralFileTypeAux = []
     const test = () => {
         console.log(ncontrato)
         console.log(checkboxOptions)
         console.log(fileNames)
         console.log(dateValue)
     }
-
     const [dateValue, setDateValue] = useState(new Date());
-
     const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Número de contrato sin faenas", value: false }])
-
-
     const ncontradoDataStatic = [
         { value: '123456789', label: '123456789' },
         { value: '987654321', label: '987654321' }
     ];
+
+    const fileTypeDataStatic = [
+        { value: "Anexos de traslado", label: "Anexos de traslado" },
+        { value: "Certificado de cumplimiento de obligaciones laborales (F30-1)", label: "Certificado de cumplimiento de obligaciones laborales (F30-1)" },
+        { value: "test", label: "test" }
+    ]
 
     // useState waiting for ncontrato to change
     useEffect(() => {
@@ -66,8 +72,6 @@ const FormFiles = () => {
         setFileNames([])
     }, [checkboxOptions])
 
-
-
     // useState waiting for checkboxOptions to change to add counter to saveFileCounter
     useEffect(() => {
         let saveFileCounter = []
@@ -77,14 +81,10 @@ const FormFiles = () => {
         setFileCounter(saveFileCounter)
     }, [checkboxOptions])
 
-
-
     return (
         <>
             <Card className="w-96 bg-gray-200" >
-
                 <CardHeader
-
                     variant="gradient"
                     color='blue'
                     className="mb-4 grid h-28 place-items-center p-2"
@@ -95,7 +95,6 @@ const FormFiles = () => {
                     <Typography variant="h6" color="white">
                         Seleccionar faenas donde se subirán los archivos
                     </Typography>
-
                 </CardHeader>
                 <CardBody className="flex flex-col gap-4">
                     <Select
@@ -107,7 +106,6 @@ const FormFiles = () => {
                     {ncontrato ? (
                         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es} >
                             <DatePicker
-
                                 views={['month', 'year',]}
                                 label="Mes y año"
                                 minDate={dayjs('2022-03-01')}
@@ -120,8 +118,6 @@ const FormFiles = () => {
                             />
                         </LocalizationProvider>
                     ) : null}
-
-
                     {ncontrato ? (
                         <Fragment>
                             {
@@ -142,7 +138,6 @@ const FormFiles = () => {
                             }
                         </Fragment>
                     ) : null}
-
                     {/* if two or more  checkboxOptions.value equals true */}
                     {ncontrato && checkboxOptions.filter(option => option.value === true).length >= 2 ? (
                         <>
@@ -151,29 +146,44 @@ const FormFiles = () => {
                             </Typography>
                             <Icon
                                 icon="close"
-                                color="info"
+                                color="warning"
                                 className="cursor-pointer"
                                 children="Agregar archivo"
                                 onClick={() => {
-                                    let newFileCounter = [...generalFilesCounter];
+                                    let newFileCounter = generalFilesCounter;
                                     newFileCounter += 1;
                                     setGeneralFilesCounter(newFileCounter)
+                                    GeneralFileTypeAux = [...generalFileType];
+                                    GeneralFileTypeAux.push({ id: generalFilesCounter, filetype: "" })
+                                    setGeneralFileType(GeneralFileTypeAux)
                                 }}>add_circle</Icon>
-
-                            <Input type="file" accept="*" onChange={(e) => {
-                                let newFileNames = [...fileNames];
-                                // append all checkboxOptions.name to a variable
-                                let faenas = ""
-                                checkboxOptions.forEach((option) => {
-                                    if (option.value) {
-                                        faenas += option.name + "|"
-                                    }
-                                })
-                                for (let i = 0; i < e.target.files.length; i++) {
-                                    newFileNames.push(faenas + e.target.files[i].name)
-                                }
-                                setFileNames(newFileNames)
-                            }} />
+                            {generalFileType.map((item, index) => (
+                                <>
+                                    <Select
+                                        key={index}
+                                        placeholder="Seleccione un tipo de archivo"
+                                        value={item.filetype}
+                                        onChange={(newValue) => {
+                                            let newGeneralFileType = [...generalFileType];
+                                            newGeneralFileType[index].filetype = newValue;
+                                            setGeneralFileType(newGeneralFileType);
+                                        }}
+                                        options={fileTypeDataStatic}
+                                    />
+                                    <Input type="file" multiple accept="*" onChange={(e) => {
+                                        let newFileNames = [...fileNames];
+                                        // append all checkboxOptions.name to a variable
+                                        checkboxOptions.forEach((option) => {
+                                            if (option.value) {
+                                                for (let i = 0; i < e.target.files.length; i++) {
+                                                    newFileNames.push(option.name + "|" + e.target.files[i].name)
+                                                }
+                                            }
+                                        })
+                                        setFileNames(newFileNames)
+                                    }} />
+                                </>
+                            ))}
                         </>
                     ) : null}
 
@@ -181,11 +191,10 @@ const FormFiles = () => {
                         return (
                             <Fragment key={index}>
                                 {option.value ? (
-                                    <div>
+                                    <>
                                         <Typography variant="h6" color="black">
                                             Archivos que se subiran a la faena: {option.name}
                                         </Typography>
-
                                         <Icon
                                             icon="close"
                                             color="info"
@@ -196,28 +205,50 @@ const FormFiles = () => {
                                                 let newFileCounter = [...fileCounter];
                                                 newFileCounter[index].counter += 1;
                                                 setFileCounter(newFileCounter)
+                                                //Push newFiletype to fileTypes
+                                                let newFileTypes = [...fileTypes];
+                                                newFileTypes.push({ id: index, filetype: "", counter: newFileCounter[index].counter })
+                                                setFileTypes(newFileTypes)
+
                                             }}>add_circle</Icon>
-
-                                        {fileCounter.filter(item => item.id === index).map((item, index) => {
+                                        {fileCounter.filter(item => item.id === index).map((item2, index2) => {
                                             let array = []
-                                            for (let i = 0; i < item.counter; i++) {
-                                                array.push(<>
+                                            //for each fileCounter > 0 push to array
+                                            let tempTypes = fileTypes.filter(item => item.id === index)
 
-                                                    <Input size="md" key={(i)} type="file" accept="*" onChange={(e) => {
-                                                        let newFileNames = [...fileNames];
+                                            for (let i = 0; i < item2.counter; i++) {
+                                                array.push(
+                                                    <>
+                                                        <Select
+                                                            key={Math.random()}
+                                                            placeholder="Seleccione un tipo de archivo"
+                                                            value={tempTypes[i].filetype}
+                                                            onChange={(newValue) => {
+                                                                let newFileTypes = [...fileTypes];
+                                                                newFileTypes.find(item => item.id === index && item.counter === tempTypes[i].counter).filetype = newValue;
+                                                                setFileTypes(newFileTypes);
+                                                            }}
+                                                            options={fileTypeDataStatic}
+                                                        />
+                                                        {fileTypes[i].filetype && <Input size="md" multiple key={(i)} type="file" accept="*" onChange={(e) => {
+                                                            let newFileNames = [...fileNames];
+                                                            for (let k = 0; k < e.target.files.length; k++) {
+                                                                let aux = fileTypes.findIndex(item => item.id === index && item.counter === tempTypes[i].counter)
 
-                                                        for (let i = 0; i < e.target.files.length; i++) {
-                                                            newFileNames.push(option.name + "|" + e.target.files[i].name)
+                                                                //If e.target.files is empty, disable button
+
+                                                                newFileNames.push(fileTypes[aux].filetype.value + "|" + option.name + "|" + e.target.files[k].name)
+                                                            }
+                                                            setFileNames(newFileNames)
+                                                        }} />
                                                         }
-                                                        setFileNames(newFileNames)
-                                                    }} />
-                                                </>)
+                                                    </>
+                                                )
                                             }
                                             return array
-                                        })
                                         }
-
-                                    </div>
+                                        )}
+                                    </>
                                 ) : null}
                             </Fragment>
                         )

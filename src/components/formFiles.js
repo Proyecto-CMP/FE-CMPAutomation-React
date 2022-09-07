@@ -6,11 +6,13 @@ import {
     CardFooter,
     Typography,
     Input,
-    Button
+    Button,
+    Progress,
+    Alert
 } from "@material-tailwind/react";
 import { Fragment } from "react";
 import { useState } from 'react'
-import { Checkbox, Icon } from '@mui/material';
+import { Checkbox, Icon, CircularProgress } from '@mui/material';
 import Select from 'react-select';
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
@@ -19,7 +21,8 @@ import TextField from '@mui/material/TextField';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { es } from "date-fns/locale";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-
+import { Upload } from "@aws-sdk/lib-storage";
+import { S3Client } from "@aws-sdk/client-s3";
 
 const FormFiles = () => {
     const [ncontrato, setNcontrato] = useState("")
@@ -28,14 +31,76 @@ const FormFiles = () => {
     const [generalFilesCounter, setGeneralFilesCounter] = useState(0)
     const [fileTypes, setFileTypes] = useState([])
     const [generalFileType, setGeneralFileType] = useState([])
+    const [progress, setProgress] = useState(0)
+    const [errorUploading, setErrorUploading] = useState(false)
+    const [LoadingState, setLoadingState] = useState(false);
 
+    var cont = 0
     var GeneralFileTypeAux = []
+    // const config = {
+    //     bucketName: "cmp-automation-bucket",
+    //     /*dirName: 'media', /* optional */
+    //     region: "us-east-2",
+    //     accessKeyId: "AKIA2T7OXYYBGVLCSHEB",
+    //     secretAccessKey: "0dmuIC1f7e/zPOj1KGZA6+LQhecjZXF4don9tetm",
+    //     /*s3Url: 'https:/your-custom-s3-url.com/', /* optional */
+    // };
+
+
     const test = () => {
-        console.log(ncontrato)
-        console.log(checkboxOptions)
-        console.log(fileNames)
-        console.log(dateValue)
+        // console.log(ncontrato)
+        // console.log(checkboxOptions)
+        // console.log(fileNames)
+        // console.log(dateValue)
+        //Length of fileNames
+        let s3Counter = fileNames.length
+        setProgress(0)
+        setLoadingState(true)
+        fileNames.map((file, index) => { 
+            //Upload to S3 using AWS SDK
+            const s3 =  new S3Client({
+                region: "us-east-2",
+                credentials: {
+                    accessKeyId: "AKIA2T7OXYYBGVLCSHEB",
+                    secretAccessKey: "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"
+                }
+            })
+
+            const upload = new Upload({
+                client: s3,
+                params: {
+                    Bucket: "cmp-automation-bucket",
+                    Key: "periodo/pendiente/"+file,
+                    Body: file,
+                }
+            })
+
+            const promise = upload.done();
+            promise.then(
+                function (data) {
+                    console.log(data)
+                    cont = (cont + 100 / s3Counter)
+                    setProgress(parseInt(cont))
+                }
+            ).catch(
+                function (err) {
+                    console.log(err)
+                    setErrorUploading(true)
+                }
+            );
+        })
+
     }
+
+    useEffect(() => {
+        if (progress > 97) {
+            setLoadingState(false)
+            setTimeout(() => {
+                setcheckboxOptions([])
+            }, 5000);
+        }
+    }, [progress])
+
     const [dateValue, setDateValue] = useState(new Date());
     const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Número de contrato sin faenas", value: false }])
     const ncontradoDataStatic = [
@@ -44,10 +109,26 @@ const FormFiles = () => {
     ];
 
     const fileTypeDataStatic = [
-        { value: "Anexos de traslado", label: "Anexos de traslado" },
-        { value: "Certificado de cumplimiento de obligaciones laborales (F30-1)", label: "Certificado de cumplimiento de obligaciones laborales (F30-1)" },
-        { value: "test", label: "test" }
+        { value: "54", label: "Anexos de traslado" },
+        { value: "46", label: "Certificado de cumplimiento de obligaciones laborales (F30-1)" },
+        { value: "41", label: "Dotación del periodo" },
+        { value: "53", label: "Finiquitos sin ratificar" },
+        { value: "48", label: "Formulario 21" },
+        { value: "58", label: "Formulario F-3230" },
+        { value: "43", label: "Libro de remuneraciones" },
+        { value: "42", label: "Liquidaciones de sueldo" },
+        { value: "52", label: "Comprobante de depósito" },
+        { value: "50", label: "Comprobante Vacaciones" },
+        { value: "51", label: "Comprobante de Permisos" },
+        { value: "45", label: "Finiquitos o anexos de traslado según corresponda" },
+        { value: "49", label: "Licencias medicas" },
+        { value: "47", label: "Pago de IVA (F-29)" },
+        { value: "44", label: "Planillas de cotizaciones previsionales (AFP. SALUD, MUTUAL, CCAF)" },
+        { value: "40", label: "Reporte Relaciones Laborales " }
     ]
+
+
+    //use Effect to update progress
 
     // useState waiting for ncontrato to change
     useEffect(() => {
@@ -70,6 +151,11 @@ const FormFiles = () => {
     // useEffect if chekboxOptions change, clear fileNames
     useEffect(() => {
         setFileNames([])
+        setFileTypes([])
+        setFileCounter([])
+        setGeneralFilesCounter(0)
+        setGeneralFileType([])
+        setProgress(0)
     }, [checkboxOptions])
 
     // useState waiting for checkboxOptions to change to add counter to saveFileCounter
@@ -160,6 +246,8 @@ const FormFiles = () => {
                             {generalFileType.map((item, index) => (
                                 <>
                                     <Select
+                                        //Disable after first selection
+                                        isDisabled={item.filetype ? true : false}
                                         key={index}
                                         placeholder="Seleccione un tipo de archivo"
                                         value={item.filetype}
@@ -176,7 +264,7 @@ const FormFiles = () => {
                                         checkboxOptions.forEach((option) => {
                                             if (option.value) {
                                                 for (let i = 0; i < e.target.files.length; i++) {
-                                                    newFileNames.push(option.name + "|" + e.target.files[i].name)
+                                                    newFileNames.push(generalFileType[index].filetype.value +"|"+option.name + "|" + e.target.files[i].name)
                                                 }
                                             }
                                         })
@@ -209,17 +297,17 @@ const FormFiles = () => {
                                                 let newFileTypes = [...fileTypes];
                                                 newFileTypes.push({ id: index, filetype: "", counter: newFileCounter[index].counter })
                                                 setFileTypes(newFileTypes)
-
                                             }}>add_circle</Icon>
                                         {fileCounter.filter(item => item.id === index).map((item2, index2) => {
                                             let array = []
                                             //for each fileCounter > 0 push to array
                                             let tempTypes = fileTypes.filter(item => item.id === index)
-
                                             for (let i = 0; i < item2.counter; i++) {
                                                 array.push(
                                                     <>
                                                         <Select
+                                                            //disable after value changes
+                                                            isDisabled={tempTypes[i].filetype ? true : false}
                                                             key={Math.random()}
                                                             placeholder="Seleccione un tipo de archivo"
                                                             value={tempTypes[i].filetype}
@@ -234,9 +322,6 @@ const FormFiles = () => {
                                                             let newFileNames = [...fileNames];
                                                             for (let k = 0; k < e.target.files.length; k++) {
                                                                 let aux = fileTypes.findIndex(item => item.id === index && item.counter === tempTypes[i].counter)
-
-                                                                //If e.target.files is empty, disable button
-
                                                                 newFileNames.push(fileTypes[aux].filetype.value + "|" + option.name + "|" + e.target.files[k].name)
                                                             }
                                                             setFileNames(newFileNames)
@@ -259,6 +344,13 @@ const FormFiles = () => {
                         Enviar Formulario
                     </Button>
                 </CardFooter>
+                <div className='p-2' >
+                    {LoadingState ? <CircularProgress /> : null}
+                    {!errorUploading && <Progress value={progress} label={" "} /> }
+                    {!errorUploading && progress>0 && <Alert className='p-1' color="green">Al finalizar se limpiará el formulario luego de 5 segundos</Alert>}
+                    {errorUploading && <Alert color="red">Error subiendo archivos!</Alert>}
+                </div>
+
             </Card>
         </>
     )

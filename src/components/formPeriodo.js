@@ -7,6 +7,8 @@ import {
   Typography,
   Input,
   Button,
+  Progress,
+  Alert
 } from "@material-tailwind/react";
 import { Fragment } from "react";
 import { useState } from 'react'
@@ -19,15 +21,61 @@ import TextField from '@mui/material/TextField';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { es } from "date-fns/locale";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
+import { CircularProgress } from '@mui/material';
 
 const FormPeriodo = () => {
   const [ncontrato, setNcontrato] = useState("")
   const [fileName, setFileName] = useState("")
+  const [progress, setProgress] = useState(0)
+  const [errorUploading, setErrorUploading] = useState(false)
+  const [LoadingState, setLoadingState] = useState(false);
+  var cont = 0
+
   const test = () => {
     console.log(ncontrato)
     console.log(checkboxOptions)
     console.log(fileName)
     console.log(dateValue)
+
+    setLoadingState(true);
+
+    const s3 = new S3Client({
+      region: "us-east-2",
+      credentials: {
+        accessKeyId: "AKIA2T7OXYYBGVLCSHEB",
+        secretAccessKey: "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"
+      }
+    })
+
+    const upload = new Upload({
+      client: s3,
+      params: {
+        Bucket: "cmp-automation-bucket",
+        Key: "periodo/pendiente/" + fileName,
+        Body: fileName,
+      }
+    })
+
+    const promise = upload.done();
+    promise.then(
+      function (data) {
+        console.log(data)
+        cont = (cont + 100 / 1)
+        setProgress(parseInt(cont))
+      }
+    ).catch(
+      function (err) {
+        console.log(err)
+        setErrorUploading(true)
+      }
+    ).finally(
+      setLoadingState(false),
+      setNcontrato("")
+    )
+
+
   }
 
   const [dateValue, setDateValue] = useState(new Date());
@@ -129,7 +177,15 @@ const FormPeriodo = () => {
               onChange={(e) => {
                 //if e.target.files is not empty
                 if (e.target.files.length > 0) {
-                  setFileName(e.target.files[0].name)
+                  //append chechboxOptions value if is true
+                  let newCheckboxOptions = [...checkboxOptions];
+                  let newFileName = ""
+                  newCheckboxOptions.forEach((option, index) => {
+                    if (option.value) {
+                      newFileName = newFileName + option.name + "|"
+                    }
+                  })
+                  setFileName(newFileName+e.target.files[0].name)
                 }
               }}
             />
@@ -144,6 +200,13 @@ const FormPeriodo = () => {
             A partir de ahora, todas las funciones para realizar la carga de información seran bloqueadas entre los dias 21 al 25 de cada mes, favor realizar la carga de información completa ya que en estas fechas señaladas no podrá regularizar la carga.
           </Typography>
         </CardFooter>
+
+        <div className='p-2' >
+                    {LoadingState ? <CircularProgress /> : null}
+                    {!errorUploading && <Progress value={progress} label={" "} /> }
+                    {!errorUploading && progress>0 && <Alert className='p-1' color="green">Al finalizar se limpiará el formulario luego de 5 segundos</Alert>}
+                    {errorUploading && <Alert color="red">Error subiendo archivos!</Alert>}
+        </div>
       </Card>
 
     </>

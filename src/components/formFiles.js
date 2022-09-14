@@ -21,8 +21,8 @@ import TextField from '@mui/material/TextField';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { es } from "date-fns/locale";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Upload } from "@aws-sdk/lib-storage";
-import { S3Client } from "@aws-sdk/client-s3";
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
 
 const FormFiles = () => {
     const [ncontrato, setNcontrato] = useState("")
@@ -34,20 +34,17 @@ const FormFiles = () => {
     const [progress, setProgress] = useState(0)
     const [errorUploading, setErrorUploading] = useState(false)
     const [LoadingState, setLoadingState] = useState(false);
-
     var cont = 0
     var GeneralFileTypeAux = []
-    // const config = {
-    //     bucketName: "cmp-automation-bucket",
-    //     /*dirName: 'media', /* optional */
-    //     region: "us-east-2",
-    //     accessKeyId: "AKIA2T7OXYYBGVLCSHEB",
-    //     secretAccessKey: "0dmuIC1f7e/zPOj1KGZA6+LQhecjZXF4don9tetm",
-    //     /*s3Url: 'https:/your-custom-s3-url.com/', /* optional */
-    // };
+
+    //decryption of token 
+    const token = localStorage.getItem('token')
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace('-', '+').replace('_', '/');
+    const decodedValue = JSON.parse(window.atob(base64));
 
 
-    const test = () => {
+    const sendfile = () => {
         // console.log(ncontrato)
         // console.log(checkboxOptions)
         // console.log(fileNames)
@@ -56,39 +53,41 @@ const FormFiles = () => {
         let s3Counter = fileNames.length
         setProgress(0)
         setLoadingState(true)
-        fileNames.map((file, index) => { 
+
+        fileNames.map((file) => {
             //Upload to S3 using AWS SDK
-            const s3 =  new S3Client({
-                region: "us-east-2",
+            const s3Client = new S3Client({
+                region: process.env.REACT_APP_AWS_REGION,
                 credentials: {
-                    accessKeyId: "AKIA2T7OXYYBGVLCSHEB",
-                    secretAccessKey: "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"
-                }
-            })
-
-            const upload = new Upload({
-                client: s3,
-                params: {
-                    Bucket: "cmp-automation-bucket",
-                    Key: "periodo/pendiente/"+file,
-                    Body: file,
-                }
-            })
-
-            const promise = upload.done();
-            promise.then(
-                function (data) {
-                    console.log(data)
+                    accessKeyId: process.env.REACT_APP_AWS_KEY,
+                    secretAccessKey: process.env.REACT_APP_AWS_SECRET,
+                },
+            });
+            const params = {
+                Bucket: process.env.REACT_APP_BUCKET_NAME,
+                Key: "archivos/pendientes/" + file,
+                Body: file,
+            };
+            try {
+                const data = s3Client.send(new PutObjectCommand(params));
+                if (data) {
                     cont = (cont + 100 / s3Counter)
                     setProgress(parseInt(cont))
-                }
-            ).catch(
-                function (err) {
-                    console.log(err)
+                  } else {
+                    console.log("Error subiendo archivo");
                     setErrorUploading(true)
-                }
-            );
+                    setLoadingState(false)
+                    setProgress(0)
+                  }
+            } catch (err) {
+                console.log("Error", err);
+                setErrorUploading(true)
+                setLoadingState(false)
+                setProgress(0)
+                cont = 0
+            }
         })
+
 
     }
 
@@ -264,7 +263,11 @@ const FormFiles = () => {
                                         checkboxOptions.forEach((option) => {
                                             if (option.value) {
                                                 for (let i = 0; i < e.target.files.length; i++) {
-                                                    newFileNames.push(generalFileType[index].filetype.value +"|"+option.name + "|" + e.target.files[i].name)
+                                                    let date = new Date(dateValue);
+                                                    let month = date.getMonth() + 1;
+                                                    let year = date.getFullYear();
+                                                    let dateValueMMYYYY = month + "-" + year;
+                                                    newFileNames.push(decodedValue.rut+"|"+dateValueMMYYYY+"|"+generalFileType[index].filetype.value + "|" + option.name + "|" + e.target.files[i].name)
                                                 }
                                             }
                                         })
@@ -322,7 +325,13 @@ const FormFiles = () => {
                                                             let newFileNames = [...fileNames];
                                                             for (let k = 0; k < e.target.files.length; k++) {
                                                                 let aux = fileTypes.findIndex(item => item.id === index && item.counter === tempTypes[i].counter)
-                                                                newFileNames.push(fileTypes[aux].filetype.value + "|" + option.name + "|" + e.target.files[k].name)
+
+                                                                //dateValue to MM-YYYY
+                                                                let date = new Date(dateValue);
+                                                                let month = date.getMonth() + 1;
+                                                                let year = date.getFullYear();
+                                                                let dateValueMMYYYY = month + "-" + year;
+                                                                newFileNames.push(decodedValue.rut+"|"+dateValueMMYYYY+"|"+fileTypes[aux].filetype.value + "|" + option.name + "|" + e.target.files[k].name)
                                                             }
                                                             setFileNames(newFileNames)
                                                         }} />
@@ -340,14 +349,22 @@ const FormFiles = () => {
                     })}
                 </CardBody>
                 <CardFooter className="pt-0">
-                    <Button variant="gradient" fullWidth onClick={test}>
-                        Enviar Formulario
-                    </Button>
+                    {/* if at least one fileTypes or generalfileTypes content is not ""  and fileNames  > 0 show button */}
+                    {((fileTypes.filter(item => item.filetype !== "").length > 0 && fileNames.length > 0) || (generalFileType.filter(item => item.filetype !== "").length > 0 && fileNames.length > 0)) ? (
+
+                        <Button variant="gradient" fullWidth onClick={sendfile}>
+                            Enviar Formulario
+                        </Button>
+                    )
+                        : <Button color="red" variant="gradient" disabled fullWidth onClick={sendfile}>
+                            Pendiente por completar
+                        </Button>}
+
                 </CardFooter>
                 <div className='p-2' >
                     {LoadingState ? <CircularProgress /> : null}
-                    {!errorUploading && <Progress value={progress} label={" "} /> }
-                    {!errorUploading && progress>0 && <Alert className='p-1' color="green">Al finalizar se limpiará el formulario luego de 5 segundos</Alert>}
+                    {!errorUploading && <Progress value={progress} label={" "} />}
+                    {!errorUploading && progress > 0 && <Alert className='p-1' color="green">Al finalizar se limpiará el formulario luego de 5 segundos</Alert>}
                     {errorUploading && <Alert color="red">Error subiendo archivos!</Alert>}
                 </div>
 

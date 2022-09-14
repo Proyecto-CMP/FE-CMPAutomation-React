@@ -16,10 +16,15 @@
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
     "aws-sdk": "^2.1210.0",
+    "buffer": "npm:Buffer@^0.0.0",
     "Buffer": "^0.0.0",
     "date-fns": "^2.29.2",
     "dayjs": "^1.11.5",
+    "dotenv": "^16.0.2",
+    "dotenv-webpack": "^8.0.1",
+    "firebase": "^9.9.4",
     "formik": "^2.2.9",
+    "node-polyfill-webpack-plugin": "^2.0.1",
     "react": "^18.2.0",
     "react-aws-s3": "^1.5.0",
     "react-dom": "^18.2.0",
@@ -59,6 +64,7 @@
   },
   "devDependencies": {
     "gh-pages": "^4.0.0",
-    "tailwindcss": "^3.1.8"
+    "tailwindcss": "^3.1.8",
+    "webpack": "^5.74.0"
   }
 }

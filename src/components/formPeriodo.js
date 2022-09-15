@@ -109,7 +109,13 @@ const FormPeriodo = () => {
   const base64Url = token.split('.')[1];
   const base64 = base64Url.replace('-', '+').replace('_', '/');
   const decodedValue = JSON.parse(window.atob(base64));
-
+  const s3Client = new S3Client({
+    region: process.env.REACT_APP_AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.REACT_APP_AWS_KEY,
+      secretAccessKey: process.env.REACT_APP_AWS_SECRET,
+    },
+  });
 
   const sendfile = () => {
 
@@ -121,30 +127,25 @@ const FormPeriodo = () => {
       //Upload to S3 using AWS SDK
 
       try {
-        const s3Client = new S3Client({
-          region: process.env.REACT_APP_AWS_REGION,
-          credentials: {
-            accessKeyId: process.env.REACT_APP_AWS_KEY,
-            secretAccessKey: process.env.REACT_APP_AWS_SECRET,
-          },
-        });
+
         const params = {
           Bucket: process.env.REACT_APP_BUCKET_NAME,
           Key: "periodo/pendientes/" + file,
           Body: file,
         };
         //wait 1 second before upload file
-        const respData = s3Client.send(new PutObjectCommand(params));
-        //if data is uploaded successfully
-        if (respData) {
-          cont = (cont + 100 / s3Counter)
-          setProgress(parseInt(cont))
-        } else {
-          console.log("Error subiendo archivo");
-          setErrorUploading(true)
-          setLoadingState(false)
-          setProgress(0)
-        }
+        s3Client.send(new PutObjectCommand(params), (err, uploaddata) => {
+          if (err) {
+              console.log("Error", err);
+              setErrorUploading(true)
+              setLoadingState(false)
+              setProgress(0)
+          }
+          if (uploaddata) {
+              cont = (cont + 100 / s3Counter)
+              setProgress(parseInt(cont))
+          }
+      });
 
       } catch (err) {
         console.log("Error", err);

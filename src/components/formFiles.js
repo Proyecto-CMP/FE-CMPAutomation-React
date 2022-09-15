@@ -58,6 +58,14 @@ const FormFiles = () => {
     const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Número de contrato sin faenas", value: false }])
     const [minDate, setMinDate] = useState();
     const [maxDate, setMaxDate] = useState();
+    const s3Client = new S3Client({
+        region: process.env.REACT_APP_AWS_REGION,
+        credentials: {
+            accessKeyId: process.env.REACT_APP_AWS_KEY,
+            secretAccessKey: process.env.REACT_APP_AWS_SECRET,
+        },
+    });
+    
 
     var cont = 0
     var GeneralFileTypeAux = []
@@ -126,29 +134,25 @@ const FormFiles = () => {
         setLoadingState(true)
         fileNames.forEach((file) => {
             //Upload to S3 using AWS SDK
-            const s3Client = new S3Client({
-                region: process.env.REACT_APP_AWS_REGION,
-                credentials: {
-                    accessKeyId: process.env.REACT_APP_AWS_KEY,
-                    secretAccessKey: process.env.REACT_APP_AWS_SECRET,
-                },
-            });
-            const params = {
-                Bucket: process.env.REACT_APP_BUCKET_NAME,
-                Key: "archivos/pendientes/" + file,
-                Body: file,
-            };
+
             try {
-                const respData = s3Client.send(new PutObjectCommand(params));
-                if (respData) {
-                    cont = (cont + 100 / s3Counter)
-                    setProgress(parseInt(cont))
-                  } else {
-                    console.log("Error subiendo archivo");
-                    setErrorUploading(true)
-                    setLoadingState(false)
-                    setProgress(0)
-                  }
+                const params = {
+                    Bucket: process.env.REACT_APP_BUCKET_NAME,
+                    Key: "archivos/pendientes/" + file,
+                    Body: file,
+                };
+                s3Client.send(new PutObjectCommand(params), (err, uploaddata) => {
+                    if (err) {
+                        console.log("Error", err);
+                        setErrorUploading(true)
+                        setLoadingState(false)
+                        setProgress(0)
+                    }
+                    if (uploaddata) {
+                        cont = (cont + 100 / s3Counter)
+                        setProgress(parseInt(cont))
+                    }
+                });
             } catch (err) {
                 console.log("Error", err);
                 setErrorUploading(true)

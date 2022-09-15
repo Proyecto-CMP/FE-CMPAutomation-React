@@ -23,6 +23,7 @@ import { es } from "date-fns/locale";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { CircularProgress } from '@mui/material';
 import { useQuery, gql } from '@apollo/client';
+import { timePickerValueManager } from '@mui/x-date-pickers/TimePicker/shared';
 
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
@@ -109,32 +110,33 @@ const FormPeriodo = () => {
   const base64Url = token.split('.')[1];
   const base64 = base64Url.replace('-', '+').replace('_', '/');
   const decodedValue = JSON.parse(window.atob(base64));
+  const s3Client = new S3Client({
+    region: process.env.REACT_APP_AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.REACT_APP_AWS_KEY,
+      secretAccessKey: process.env.REACT_APP_AWS_SECRET,
+    },
+  });
 
   const sendfile = () => {
-    console.log(dateRemuneraciones)
-    console.log(dateHorasExtras)
+
     setLoadingState(true);
     let s3Counter = fileName.length
     setProgress(0)
     setLoadingState(true)
     fileName.map((file, index) => {
       //Upload to S3 using AWS SDK
-      const s3Client = new S3Client({
-        region: process.env.REACT_APP_AWS_REGION,
-        credentials: {
-          accessKeyId: process.env.REACT_APP_AWS_KEY,
-          secretAccessKey: process.env.REACT_APP_AWS_SECRET,
-        },
-      });
       const params = {
         Bucket: process.env.REACT_APP_BUCKET_NAME,
         Key: "periodo/pendientes/" + file,
         Body: file,
       };
       try {
-        const data = s3Client.send(new PutObjectCommand(params));
+        //wait 1 second before upload file
+
+        const respData = s3Client.send(new PutObjectCommand(params));
         //if data is uploaded successfully
-        if (data) {
+        if (respData) {
           cont = (cont + 100 / s3Counter)
           setProgress(parseInt(cont))
         } else {
@@ -401,6 +403,7 @@ const FormPeriodo = () => {
                   //append chechboxOptions value if is true
                   let newCheckboxOptions = [...checkboxOptions];
                   let newFileName = ""
+                  let tempValue = [];
                   //for each true checkeboxOptions add to setfileName
                   newCheckboxOptions.forEach((option, index) => {
                     if (option.value) {
@@ -409,9 +412,11 @@ const FormPeriodo = () => {
                       let year = date.getFullYear();
                       let dateValueMMYYYY = month + "-" + year;
                       newFileName = decodedValue.rut + "|" + ncontrato.value + "|" + dateValueMMYYYY + "|" + option.name + "|" + subContrato + "|" + rutOpcCap + "|" + opcCap + "|" + adcEmpresa + "|" + encargadoRrhh + "|" + mailOpcCap1 + "|" + mailOpcCap2 + "|" + dayjs(dateRemuneraciones).format('DD-MM-YYYY') + "|" + dayjs(dateHorasExtras).format('DD-MM-YYYY') + "|" + e.target.files[0].name;
-                      setFileName(prevState => [...prevState, newFileName])
+                      
+                      tempValue.push(newFileName)
                     }
                   })
+                  setFileName(tempValue)
                 }
               }}
             />

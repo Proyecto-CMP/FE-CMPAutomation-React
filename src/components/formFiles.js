@@ -124,7 +124,6 @@ const FormFiles = () => {
         let s3Counter = fileNames.length
         setProgress(0)
         setLoadingState(true)
-
         fileNames.map((file) => {
             //Upload to S3 using AWS SDK
             const s3Client = new S3Client({

@@ -1,7 +1,7 @@
 {
   "name": "fe-cmpautomation-react",
   "version": "0.1.0",
-  "homepage": "https://proyecto-cmp.github.io/FE-CMPAutomation-React",
+  "homepage": "",
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.6.9",

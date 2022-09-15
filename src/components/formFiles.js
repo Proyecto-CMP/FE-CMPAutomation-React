@@ -21,11 +21,30 @@ import TextField from '@mui/material/TextField';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { es } from "date-fns/locale";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { useQuery, gql } from '@apollo/client';
+
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
+//Apollo Client query
+const obtenerContratosRut = gql`
+    query obtenerContratosRut ($rut : String!){
+        obtenerContratosRut (rut : $rut){
+        rut
+        contratos{
+            name
+                fecha_inicio
+                fecha_termino
+            divisiones{
+                name
+            }
+        }
+        }
+    }
+`
 
 
 const FormFiles = () => {
-    const [ncontrato, setNcontrato] = useState("")
+    const [ncontrato, setNcontrato] = useState('')
     const [fileNames, setFileNames] = useState([])
     const [fileCounter, setFileCounter] = useState([])
     const [generalFilesCounter, setGeneralFilesCounter] = useState(0)
@@ -34,15 +53,67 @@ const FormFiles = () => {
     const [progress, setProgress] = useState(0)
     const [errorUploading, setErrorUploading] = useState(false)
     const [LoadingState, setLoadingState] = useState(false);
+    const [ncontratoOptions, setNcontratoOptions] = useState([{ value: "000000", label: "Sin contratos" }])
+    const [dateValue, setDateValue] = useState(new Date());
+    const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Número de contrato sin faenas", value: false }])
+    const [minDate, setMinDate] = useState();
+    const [maxDate, setMaxDate] = useState();
+
     var cont = 0
     var GeneralFileTypeAux = []
 
-    //decryption of token 
+    //get rut from localstorage token
+    const rut = localStorage.getItem('token').split('.')[1]
+    const rutDecoded = JSON.parse(atob(rut))
+    const rutUser = rutDecoded.rut
+
+    //Apollo client useQuery
+    const { data } = useQuery(obtenerContratosRut, {
+        variables: {
+            rut: rutUser
+            }
+            });
+    
+    //console.log("RutData",data.obtenerContratosRut.contratos)
+
+    //Assign data.obtenerContratosRut.contratos to ncontratoOptions
+    useEffect(() => {
+        if (data) {
+            let ncontratoOptionsAux = []
+            data.obtenerContratosRut.contratos.map((contrato) => {
+                ncontratoOptionsAux.push({ value: contrato.name, label: contrato.name })
+            })
+            setNcontratoOptions(ncontratoOptionsAux)
+        }
+    }, [data])
+
+
+    //Assign data.obtenerContratosRut.contratos.divisiones to CheckboxOptions based on ncontrato
+
+    useEffect(() => {
+        if (data) {
+            let checkboxOptionsAux = []
+
+            //filter in data to get the selected ncontrato and assign it to checkboxOptions
+            data.obtenerContratosRut.contratos.map((contrato) => {
+                if (contrato.name === ncontrato.value) {
+                    //set minDate and maxDate
+                    setDateValue(new Date())
+                    setMinDate(contrato.fecha_inicio)
+                    setMaxDate(contrato.fecha_termino)
+                    contrato.divisiones.map((division) => {
+                        checkboxOptionsAux.push({ value: false, name: division.name })
+                    })
+                }
+            })
+            setcheckboxOptions(checkboxOptionsAux)
+        }
+    }, [ncontrato, data])
+
     const token = localStorage.getItem('token')
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace('-', '+').replace('_', '/');
     const decodedValue = JSON.parse(window.atob(base64));
-
 
     const sendfile = () => {
         // console.log(ncontrato)
@@ -69,8 +140,8 @@ const FormFiles = () => {
                 Body: file,
             };
             try {
-                const data = s3Client.send(new PutObjectCommand(params));
-                if (data) {
+                const respData = s3Client.send(new PutObjectCommand(params));
+                if (respData) {
                     cont = (cont + 100 / s3Counter)
                     setProgress(parseInt(cont))
                   } else {
@@ -88,7 +159,6 @@ const FormFiles = () => {
             }
         })
 
-
     }
 
     useEffect(() => {
@@ -96,16 +166,14 @@ const FormFiles = () => {
             setLoadingState(false)
             setTimeout(() => {
                 setcheckboxOptions([])
+                setNcontrato('')
             }, 5000);
         }
     }, [progress])
 
-    const [dateValue, setDateValue] = useState(new Date());
-    const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Número de contrato sin faenas", value: false }])
-    const ncontradoDataStatic = [
-        { value: '123456789', label: '123456789' },
-        { value: '987654321', label: '987654321' }
-    ];
+    //useEffect print minDate and maxDate
+
+
 
     const fileTypeDataStatic = [
         { value: "54", label: "Anexos de traslado" },
@@ -130,22 +198,7 @@ const FormFiles = () => {
     //use Effect to update progress
 
     // useState waiting for ncontrato to change
-    useEffect(() => {
-        if (ncontrato.value === "123456789") {
-            setcheckboxOptions([
-                { name: "Guacolda", value: false },
-                { name: "Cerro Negro Norte", value: false },
-                { name: "Planta Pellets", value: false },
-                { name: "Faena 2", value: false },
-                { name: "Faena 3", value: false },
-                { name: "Faena 4", value: false }])
-        }
-        if (ncontrato.value === "987654321") {
-            setcheckboxOptions([
-                { name: "Mina Los Colorados", value: false },
-                { name: "Romeral", value: false }])
-        }
-    }, [ncontrato])
+
 
     // useEffect if chekboxOptions change, clear fileNames
     useEffect(() => {
@@ -186,15 +239,18 @@ const FormFiles = () => {
                         placeholder="Seleccione un número de contrato"
                         value={ncontrato}
                         onChange={setNcontrato}
-                        options={ncontradoDataStatic}
+                        options={ncontratoOptions}
                     />
+                    
                     {ncontrato ? (
+                        
                         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es} >
                             <DatePicker
                                 views={['month', 'year',]}
                                 label="Mes y año"
-                                minDate={dayjs('2022-03-01')}
-                                maxDate={dayjs('2022-10-01')}
+                                //minDate to be setted, dayjs
+                                minDate={dayjs(minDate)}
+                                maxDate={dayjs(maxDate)}
                                 value={dateValue}
                                 onChange={(newValue) => {
                                     setDateValue(newValue);
@@ -206,6 +262,7 @@ const FormFiles = () => {
                     {ncontrato ? (
                         <Fragment>
                             {
+
                                 checkboxOptions.map((option, index) => {
                                     return (
                                         <div key={index}>

@@ -22,7 +22,25 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { es } from "date-fns/locale";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { CircularProgress } from '@mui/material';
+import { useQuery, gql } from '@apollo/client';
+
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
+const obtenerContratosRut = gql`
+    query obtenerContratosRut ($rut : String!){
+        obtenerContratosRut (rut : $rut){
+        rut
+        contratos{
+            name
+                fecha_inicio
+                fecha_termino
+            divisiones{
+                name
+            }
+        }
+        }
+    }
+`
 
 const FormPeriodo = () => {
   const [ncontrato, setNcontrato] = useState("")
@@ -43,13 +61,49 @@ const FormPeriodo = () => {
   const [encargadoRrhh, setEncargadoRrhh] = useState("")
   const [mailOpcCap1, setMailOpcCap1] = useState("")
   const [mailOpcCap2, setMailOpcCap2] = useState("")
-
+  const [ncontratoOptions, setNcontratoOptions] = useState([{ value: "000000", label: "Sin contratos" }])
   const [checkboxOptions, setcheckboxOptions] = useState([{ name: "Numero de contrato sin faenas", value: false }])
-  const ncontradoDataStatic = [
-    { value: '123456789', label: '123456789' },
-    { value: '987654321', label: '987654321' }
-  ];
+  const rut = localStorage.getItem('token').split('.')[1]
+  const rutDecoded = JSON.parse(atob(rut))
+  const rutUser = rutDecoded.rut
+  const [minDate, setMinDate] = useState();
+  const [maxDate, setMaxDate] = useState();
   var cont = 0
+
+  const { data } = useQuery(obtenerContratosRut, {
+    variables: {
+      rut: rutUser
+    }
+  });
+
+  useEffect(() => {
+    if (data) {
+      let ncontratoOptionsAux = []
+      data.obtenerContratosRut.contratos.map((contrato) => {
+        ncontratoOptionsAux.push({ value: contrato.name, label: contrato.name })
+      })
+      setNcontratoOptions(ncontratoOptionsAux)
+    }
+  }, [data])
+
+
+  useEffect(() => {
+    if (data) {
+      let checkboxOptionsAux = []
+      //filter in data to get the selected ncontrato and assign it to checkboxOptions
+      data.obtenerContratosRut.contratos.map((contrato) => {
+        if (contrato.name === ncontrato.value) {
+          setDateValue(new Date())
+          setMinDate(contrato.fecha_inicio)
+          setMaxDate(contrato.fecha_termino)
+          contrato.divisiones.map((division) => {
+            checkboxOptionsAux.push({ value: false, name: division.name })
+          })
+        }
+      })
+      setcheckboxOptions(checkboxOptionsAux)
+    }
+  }, [ncontrato,data])
 
   const token = localStorage.getItem('token')
   const base64Url = token.split('.')[1];
@@ -57,11 +111,8 @@ const FormPeriodo = () => {
   const decodedValue = JSON.parse(window.atob(base64));
 
   const sendfile = () => {
-    // console.log(ncontrato)
-    // console.log(checkboxOptions)
-    // console.log(fileName)
-    // console.log(dateValue)
-
+    console.log(dateRemuneraciones)
+    console.log(dateHorasExtras)
     setLoadingState(true);
     let s3Counter = fileName.length
     setProgress(0)
@@ -69,38 +120,41 @@ const FormPeriodo = () => {
     fileName.map((file, index) => {
       //Upload to S3 using AWS SDK
       const s3Client = new S3Client({
-          region: process.env.REACT_APP_AWS_REGION,
-          credentials: {
-              accessKeyId: process.env.REACT_APP_AWS_KEY,
-              secretAccessKey: process.env.REACT_APP_AWS_SECRET,
-          },
+        region: process.env.REACT_APP_AWS_REGION,
+        credentials: {
+          accessKeyId: process.env.REACT_APP_AWS_KEY,
+          secretAccessKey: process.env.REACT_APP_AWS_SECRET,
+        },
       });
       const params = {
-          Bucket: process.env.REACT_APP_BUCKET_NAME,
-          Key: "periodo/pendientes/" + file,
-          Body: file,
+        Bucket: process.env.REACT_APP_BUCKET_NAME,
+        Key: "periodo/pendientes/" + file,
+        Body: file,
       };
       try {
-          const data = s3Client.send(new PutObjectCommand(params));
-          //if data is uploaded successfully
-          if (data) {
-            cont = (cont + 100 / s3Counter)
-            setProgress(parseInt(cont))
-          } else {
-            console.log("Error subiendo archivo");
-            setErrorUploading(true)
-            setLoadingState(false)
-            setProgress(0)
-          }
-          
-      } catch (err) {
-          console.log("Error", err);
+        const data = s3Client.send(new PutObjectCommand(params));
+        //if data is uploaded successfully
+        if (data) {
+          cont = (cont + 100 / s3Counter)
+          setProgress(parseInt(cont))
+        } else {
+          console.log("Error subiendo archivo");
           setErrorUploading(true)
           setLoadingState(false)
           setProgress(0)
-          cont = 0
+        }
+
+      } catch (err) {
+        console.log("Error", err);
+        setErrorUploading(true)
+        setLoadingState(false)
+        setProgress(0)
+        cont = 0
       }
-  })
+    })
+
+    //Timeout of 5 seconds to wait for the upload to finish
+
   }
 
   useEffect(() => {
@@ -109,6 +163,9 @@ const FormPeriodo = () => {
       setTimeout(() => {
         setcheckboxOptions([])
         setProgress(0)
+        setNcontrato("")
+        setFileName([])
+        setValidForm(false)
       }, 5000);
     }
   }, [progress])
@@ -120,7 +177,7 @@ const FormPeriodo = () => {
     } else {
       setValidForm(false)
     }
-  }, [ncontrato, dateValue, dateRemuneraciones, dateHorasExtras, rutOpcCap, opcCap, adcEmpresa, encargadoRrhh, mailOpcCap1, mailOpcCap2,subContrato])
+  }, [ncontrato, dateValue, dateRemuneraciones, dateHorasExtras, rutOpcCap, opcCap, adcEmpresa, encargadoRrhh, mailOpcCap1, mailOpcCap2, subContrato])
 
 
 
@@ -150,6 +207,7 @@ const FormPeriodo = () => {
     setFileName([])
     setProgress(0)
     setLoadingState(false)
+    setValidForm(false)
   }, [checkboxOptions])
 
   return (
@@ -175,7 +233,7 @@ const FormPeriodo = () => {
             placeholder="Seleccione un numero de contrato"
             value={ncontrato}
             onChange={setNcontrato}
-            options={ncontradoDataStatic}
+            options={ncontratoOptions}
           />
 
           {ncontrato ? (
@@ -183,8 +241,8 @@ const FormPeriodo = () => {
               <DatePicker
                 views={['month', 'year',]}
                 label="Mes y año"
-                minDate={dayjs('2022-01-01')}
-                maxDate={dayjs('2022-10-01')}
+                minDate={dayjs(minDate)}
+                maxDate={dayjs(maxDate)}
                 value={dateValue}
                 onChange={(newValue) => {
                   setDateValue(newValue);
@@ -350,7 +408,7 @@ const FormPeriodo = () => {
                       let month = date.getMonth() + 1;
                       let year = date.getFullYear();
                       let dateValueMMYYYY = month + "-" + year;
-                      newFileName = decodedValue.rut+"|"+ ncontrato.value + "|"+dateValueMMYYYY+"|" + option.name +"|"+ subContrato+"|" + rutOpcCap +"|"+ opcCap +"|"+ adcEmpresa +"|"+ encargadoRrhh +"|"+ mailOpcCap1 +"|"+ mailOpcCap2 +"|"+ dayjs(dateRemuneraciones).format('MM-YYYY') +"|"+ dayjs(dateHorasExtras).format('MM-YYYY') + "|" + e.target.files[0].name;
+                      newFileName = decodedValue.rut + "|" + ncontrato.value + "|" + dateValueMMYYYY + "|" + option.name + "|" + subContrato + "|" + rutOpcCap + "|" + opcCap + "|" + adcEmpresa + "|" + encargadoRrhh + "|" + mailOpcCap1 + "|" + mailOpcCap2 + "|" + dayjs(dateRemuneraciones).format('DD-MM-YYYY') + "|" + dayjs(dateHorasExtras).format('DD-MM-YYYY') + "|" + e.target.files[0].name;
                       setFileName(prevState => [...prevState, newFileName])
                     }
                   })
@@ -365,16 +423,16 @@ const FormPeriodo = () => {
           {/*  if validForm, show button blue else show button red*/}
           {validForm ? (
 
-          <Button  variant="gradient" fullWidth onClick={sendfile}>
-            Enviar Formulario
-          </Button>
+            <Button variant="gradient" fullWidth onClick={sendfile}>
+              Enviar Formulario
+            </Button>
           ) : (
             <Button color="red" variant="gradient" fullWidth disabled onClick={sendfile}>
               Pendiente por completar
             </Button>
           )}
 
-          
+
         </CardFooter>
         <div className='p-2' >
           {LoadingState ? <CircularProgress /> : null}

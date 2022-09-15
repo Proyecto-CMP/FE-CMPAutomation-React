@@ -7,7 +7,7 @@ import { ApolloClient, InMemoryCache, ApolloProvider} from '@apollo/client';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const client = new ApolloClient({
-  uri: 'https://be-cmpautomation-graphql.herokuapp.com',
+  uri: process.env.REACT_APP_GRAPHQL_URL,
   cache: new InMemoryCache(),
 });
 

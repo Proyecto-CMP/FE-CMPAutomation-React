@@ -23,7 +23,6 @@ import { es } from "date-fns/locale";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { CircularProgress } from '@mui/material';
 import { useQuery, gql } from '@apollo/client';
-import { timePickerValueManager } from '@mui/x-date-pickers/TimePicker/shared';
 
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
@@ -80,7 +79,7 @@ const FormPeriodo = () => {
   useEffect(() => {
     if (data) {
       let ncontratoOptionsAux = []
-      data.obtenerContratosRut.contratos.map((contrato) => {
+      data.obtenerContratosRut.contratos.forEach((contrato) => {
         ncontratoOptionsAux.push({ value: contrato.name, label: contrato.name })
       })
       setNcontratoOptions(ncontratoOptionsAux)
@@ -92,12 +91,12 @@ const FormPeriodo = () => {
     if (data) {
       let checkboxOptionsAux = []
       //filter in data to get the selected ncontrato and assign it to checkboxOptions
-      data.obtenerContratosRut.contratos.map((contrato) => {
+      data.obtenerContratosRut.contratos.forEach((contrato) => {
         if (contrato.name === ncontrato.value) {
           setDateValue(new Date())
           setMinDate(contrato.fecha_inicio)
           setMaxDate(contrato.fecha_termino)
-          contrato.divisiones.map((division) => {
+          contrato.divisiones.forEach((division) => {
             checkboxOptionsAux.push({ value: false, name: division.name })
           })
         }
@@ -124,7 +123,7 @@ const FormPeriodo = () => {
     let s3Counter = fileName.length
     setProgress(0)
     setLoadingState(true)
-    fileName.map((file, index) => {
+    fileName.forEach((file, index) => {
       //Upload to S3 using AWS SDK
       const params = {
         Bucket: process.env.REACT_APP_BUCKET_NAME,

@@ -80,7 +80,7 @@ const FormFiles = () => {
     useEffect(() => {
         if (data) {
             let ncontratoOptionsAux = []
-            data.obtenerContratosRut.contratos.map((contrato) => {
+            data.obtenerContratosRut.contratos.forEach((contrato) => {
                 ncontratoOptionsAux.push({ value: contrato.name, label: contrato.name })
             })
             setNcontratoOptions(ncontratoOptionsAux)
@@ -95,16 +95,16 @@ const FormFiles = () => {
             let checkboxOptionsAux = []
 
             //filter in data to get the selected ncontrato and assign it to checkboxOptions
-            data.obtenerContratosRut.contratos.map((contrato) => {
-                if (contrato.name === ncontrato.value) {
-                    //set minDate and maxDate
-                    setDateValue(new Date())
-                    setMinDate(contrato.fecha_inicio)
-                    setMaxDate(contrato.fecha_termino)
-                    contrato.divisiones.map((division) => {
-                        checkboxOptionsAux.push({ value: false, name: division.name })
-                    })
-                }
+            data.obtenerContratosRut.contratos.forEach((contrato) => {
+                    if (contrato.name === ncontrato.value){
+                        //set minDate and maxDate
+                        setDateValue(new Date())
+                        setMinDate(contrato.fecha_inicio)
+                        setMaxDate(contrato.fecha_termino)
+                        contrato.divisiones.forEach((division) => {
+                            checkboxOptionsAux.push({ value: false, name: division.name })
+                        })
+                    }
             })
             setcheckboxOptions(checkboxOptionsAux)
         }
@@ -124,7 +124,7 @@ const FormFiles = () => {
         let s3Counter = fileNames.length
         setProgress(0)
         setLoadingState(true)
-        fileNames.map((file) => {
+        fileNames.forEach((file) => {
             //Upload to S3 using AWS SDK
             const s3Client = new S3Client({
                 region: process.env.REACT_APP_AWS_REGION,

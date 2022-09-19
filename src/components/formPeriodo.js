@@ -78,7 +78,7 @@ const FormPeriodo = () => {
 
   useEffect(() => {
     if (data) {
-      if(data.obtenerContratosRut > 0){
+      if(data.obtenerContratosRut != null){
         let ncontratoOptionsAux = []
         data.obtenerContratosRut.contratos.forEach((contrato) => {
           ncontratoOptionsAux.push({ value: contrato.name, label: contrato.name })
@@ -91,7 +91,7 @@ const FormPeriodo = () => {
 
   useEffect(() => {
     if (data) {
-      if (data.obtenerContratosRut > 0) {
+      if (data.obtenerContratosRut != null) {
         let checkboxOptionsAux = []
         //filter in data to get the selected ncontrato and assign it to checkboxOptions
         data.obtenerContratosRut.contratos.forEach((contrato) => {

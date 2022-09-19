@@ -78,30 +78,34 @@ const FormPeriodo = () => {
 
   useEffect(() => {
     if (data) {
-      let ncontratoOptionsAux = []
-      data.obtenerContratosRut.contratos.forEach((contrato) => {
-        ncontratoOptionsAux.push({ value: contrato.name, label: contrato.name })
-      })
-      setNcontratoOptions(ncontratoOptionsAux)
+      if(data.obtenerContratosRut > 0){
+        let ncontratoOptionsAux = []
+        data.obtenerContratosRut.contratos.forEach((contrato) => {
+          ncontratoOptionsAux.push({ value: contrato.name, label: contrato.name })
+        })
+        setNcontratoOptions(ncontratoOptionsAux)
+      }
     }
   }, [data])
 
 
   useEffect(() => {
     if (data) {
-      let checkboxOptionsAux = []
-      //filter in data to get the selected ncontrato and assign it to checkboxOptions
-      data.obtenerContratosRut.contratos.forEach((contrato) => {
-        if (contrato.name === ncontrato.value) {
-          setDateValue(new Date())
-          setMinDate(contrato.fecha_inicio)
-          setMaxDate(contrato.fecha_termino)
-          contrato.divisiones.forEach((division) => {
-            checkboxOptionsAux.push({ value: false, name: division.name })
-          })
-        }
-      })
-      setcheckboxOptions(checkboxOptionsAux)
+      if (data.obtenerContratosRut > 0) {
+        let checkboxOptionsAux = []
+        //filter in data to get the selected ncontrato and assign it to checkboxOptions
+        data.obtenerContratosRut.contratos.forEach((contrato) => {
+          if (contrato.name === ncontrato.value) {
+            setDateValue(new Date())
+            setMinDate(contrato.fecha_inicio)
+            setMaxDate(contrato.fecha_termino)
+            contrato.divisiones.forEach((division) => {
+              checkboxOptionsAux.push({ value: false, name: division.name })
+            })
+          }
+        })
+        setcheckboxOptions(checkboxOptionsAux)
+      }
     }
   }, [ncontrato,data])
 

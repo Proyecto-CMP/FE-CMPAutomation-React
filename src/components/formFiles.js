@@ -87,11 +87,13 @@ const FormFiles = () => {
     //Assign data.obtenerContratosRut.contratos to ncontratoOptions
     useEffect(() => {
         if (data) {
+            if(data.obtenerContratosRut > 0){
             let ncontratoOptionsAux = []
             data.obtenerContratosRut.contratos.forEach((contrato) => {
                 ncontratoOptionsAux.push({ value: contrato.name, label: contrato.name })
             })
             setNcontratoOptions(ncontratoOptionsAux)
+            }
         }
     }, [data])
 
@@ -100,21 +102,23 @@ const FormFiles = () => {
 
     useEffect(() => {
         if (data) {
-            let checkboxOptionsAux = []
+            if(data.obtenerContratosRut > 0){
+                let checkboxOptionsAux = []
 
-            //filter in data to get the selected ncontrato and assign it to checkboxOptions
-            data.obtenerContratosRut.contratos.forEach((contrato) => {
-                    if (contrato.name === ncontrato.value){
-                        //set minDate and maxDate
-                        setDateValue(new Date())
-                        setMinDate(contrato.fecha_inicio)
-                        setMaxDate(contrato.fecha_termino)
-                        contrato.divisiones.forEach((division) => {
-                            checkboxOptionsAux.push({ value: false, name: division.name })
-                        })
-                    }
-            })
-            setcheckboxOptions(checkboxOptionsAux)
+                //filter in data to get the selected ncontrato and assign it to checkboxOptions
+                data.obtenerContratosRut.contratos.forEach((contrato) => {
+                        if (contrato.name === ncontrato.value){
+                            //set minDate and maxDate
+                            setDateValue(new Date())
+                            setMinDate(contrato.fecha_inicio)
+                            setMaxDate(contrato.fecha_termino)
+                            contrato.divisiones.forEach((division) => {
+                                checkboxOptionsAux.push({ value: false, name: division.name })
+                            })
+                        }
+                })
+                setcheckboxOptions(checkboxOptionsAux)
+            }
         }
     }, [ncontrato, data])
 

@@ -122,7 +122,6 @@ const FormPeriodo = () => {
   });
 
   const sendfile = () => {
-
     setLoadingState(true);
     let s3Counter = fileName.length
     setProgress(0)
@@ -179,7 +178,7 @@ const FormPeriodo = () => {
 
   //useEffect If all useState are not empty, then enable button
   useEffect(() => {
-    if (subContrato !== "" && ncontrato !== "" && dateValue !== "" && dateRemuneraciones !== "" && dateHorasExtras !== "" && rutOpcCap !== "" && opcCap !== "" && adcEmpresa !== "" && encargadoRrhh !== "" && mailOpcCap1 !== "" && mailOpcCap2 !== "") {
+    if (subContrato !== "" && ncontrato !== "" && dateValue !== "" && dateRemuneraciones !== "" && dateHorasExtras !== "" && rutOpcCap !== "" && opcCap !== "" && adcEmpresa !== "" && encargadoRrhh !== "" && mailOpcCap1 !== "" && mailOpcCap2 !== "" && fileName !== "") {
       setValidForm(true)
     } else {
       setValidForm(false)

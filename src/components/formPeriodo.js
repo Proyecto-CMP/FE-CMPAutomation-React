@@ -178,12 +178,12 @@ const FormPeriodo = () => {
 
   //useEffect If all useState are not empty, then enable button
   useEffect(() => {
-    if (subContrato !== "" && ncontrato !== "" && dateValue !== "" && dateRemuneraciones !== "" && dateHorasExtras !== "" && rutOpcCap !== "" && opcCap !== "" && adcEmpresa !== "" && encargadoRrhh !== "" && mailOpcCap1 !== "" && mailOpcCap2 !== "" && fileName !== "") {
+    if (subContrato !== "" && ncontrato !== "" && dateValue !== "" && dateRemuneraciones !== "" && dateHorasExtras !== "" && rutOpcCap !== "" && opcCap !== "" && adcEmpresa !== "" && encargadoRrhh !== "" && mailOpcCap1 !== "" && mailOpcCap2 !== "" && fileName.length > 0) {
       setValidForm(true)
     } else {
       setValidForm(false)
     }
-  }, [ncontrato, dateValue, dateRemuneraciones, dateHorasExtras, rutOpcCap, opcCap, adcEmpresa, encargadoRrhh, mailOpcCap1, mailOpcCap2, subContrato])
+  }, [ncontrato, fileName,dateValue, dateRemuneraciones, dateHorasExtras, rutOpcCap, opcCap, adcEmpresa, encargadoRrhh, mailOpcCap1, mailOpcCap2, subContrato])
 
 
 

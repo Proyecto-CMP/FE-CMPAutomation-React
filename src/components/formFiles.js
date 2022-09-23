@@ -87,7 +87,7 @@ const FormFiles = () => {
     //Assign data.obtenerContratosRut.contratos to ncontratoOptions
     useEffect(() => {
         if (data) {
-            console.log(data)
+            //console.log(data)
             if(data.obtenerContratosRut  != null){
             let ncontratoOptionsAux = []
             data.obtenerContratosRut.contratos.forEach((contrato) => {

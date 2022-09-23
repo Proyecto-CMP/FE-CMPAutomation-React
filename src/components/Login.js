@@ -49,11 +49,11 @@ const Login = () => {
                     }
                 });
 
-                console.log(data);
+                //console.log(data);
                 // Guardar el token en localstorage
                 setTimeout(() => {
                     setLoadingState(false);
-                    console.log('Guardando token');
+                    //console.log('Guardando token');
                     setshowSuccess(true);
                     const { token } = data.autenticarUsuario;
                     localStorage.setItem('token', token);
@@ -64,7 +64,7 @@ const Login = () => {
                 //Redireccionar hacia clientes
                 setTimeout(() => {
                     setLoadingState(false);
-                    console.log('Redireccionando');
+                    //console.log('Redireccionando');
                     setshowSuccess(true);
                     navigate('/forms');
                 }, 2000);

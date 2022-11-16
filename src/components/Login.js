@@ -32,7 +32,7 @@ const Login = () => {
             rut: Yup.string()
                 .required('El rut no puede ir vacio'),
             password: Yup.string()
-                .required('La contraseña  no puede ir vacia')
+                .required('La contraseña no puede ir vacia')
         }),
         onSubmit: async valores => {
             const { rut, password } = valores;

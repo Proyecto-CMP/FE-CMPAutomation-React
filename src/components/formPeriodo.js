@@ -133,8 +133,8 @@ const FormPeriodo = () => {
 
         const params = {
           Bucket: process.env.REACT_APP_BUCKET_NAME,
-          Key: "periodo/pendientes/" + file,
-          Body: file,
+          Key: "periodo/pendientes/" + file.name,
+          Body: file.file,
         };
         //wait 1 second before upload file
         s3Client.send(new PutObjectCommand(params), (err, uploaddata) => {
@@ -416,8 +416,7 @@ const FormPeriodo = () => {
                       let year = date.getFullYear();
                       let dateValueMMYYYY = month + "-" + year;
                       newFileName = decodedValue.rut + "|" + ncontrato.value + "|" + dateValueMMYYYY + "|" + option.name + "|" + subContrato + "|" + rutOpcCap + "|" + opcCap + "|" + adcEmpresa + "|" + encargadoRrhh + "|" + mailOpcCap1 + "|" + mailOpcCap2 + "|" + dayjs(dateRemuneraciones).format('DD-MM-YYYY') + "|" + dayjs(dateHorasExtras).format('DD-MM-YYYY') + "|" + e.target.files[0].name;
-                      
-                      tempValue.push(newFileName)
+                      tempValue.push({"file":e.target.files[0] ,"name":newFileName})
                     }
                   })
                   setFileName(tempValue)

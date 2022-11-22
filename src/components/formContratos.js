@@ -27,7 +27,7 @@ export const FormContratos = () => {
             const params = {
                 Bucket: process.env.REACT_APP_BUCKET_NAME,
                 Key: "contratos/pendientes/" + fileName.name,
-                Body: fileName.name,
+                Body: fileName,
             };
             //wait 1 second before upload file
             s3Client.send(new PutObjectCommand(params), (err, uploaddata) => {

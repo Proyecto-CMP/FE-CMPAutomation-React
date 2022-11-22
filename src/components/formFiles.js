@@ -141,10 +141,14 @@ const FormFiles = () => {
             //Upload to S3 using AWS SDK
 
             try {
+                //print file attributes
+                console.log("File name: ", file)
+
+
                 const params = {
                     Bucket: process.env.REACT_APP_BUCKET_NAME,
-                    Key: "archivos/pendientes/" + file,
-                    Body: file,
+                    Key: "archivos/pendientes/" + file.name,
+                    Body: file.file,
                 };
                 s3Client.send(new PutObjectCommand(params), (err, uploaddata) => {
                     if (err) {
@@ -332,7 +336,8 @@ const FormFiles = () => {
                                                     let month = date.getMonth() + 1;
                                                     let year = date.getFullYear();
                                                     let dateValueMMYYYY = month + "-" + year;
-                                                    newFileNames.push(decodedValue.rut+"|"+dateValueMMYYYY+"|"+generalFileType[index].filetype.value + "|" + option.name + "|" + e.target.files[i].name)
+                                                    let nameAux = decodedValue.rut+"|"+dateValueMMYYYY+"|"+generalFileType[index].filetype.value + "|" + option.name + "|" + e.target.files[i].name
+                                                    newFileNames.push({"file": e.target.files[i],"name":nameAux})
                                                 }
                                             }
                                         })
@@ -396,7 +401,9 @@ const FormFiles = () => {
                                                                 let month = date.getMonth() + 1;
                                                                 let year = date.getFullYear();
                                                                 let dateValueMMYYYY = month + "-" + year;
-                                                                newFileNames.push(decodedValue.rut+"|"+dateValueMMYYYY+"|"+fileTypes[aux].filetype.value + "|" + option.name + "|" + e.target.files[k].name)
+                                                                let nameAux = decodedValue.rut+"|"+dateValueMMYYYY+"|"+fileTypes[aux].filetype.value + "|" + option.name + "|" + e.target.files[k].name
+                                                                newFileNames.push({"file": e.target.files[k],"name":nameAux})
+                                                                
                                                             }
                                                             setFileNames(newFileNames)
                                                         }} />
